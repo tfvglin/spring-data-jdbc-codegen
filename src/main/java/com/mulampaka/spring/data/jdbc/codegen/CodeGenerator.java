@@ -26,10 +26,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.StringTokenizer;
+import java.util.*;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.slf4j.Logger;
@@ -54,6 +52,9 @@ public class CodeGenerator
 	private List<String> ignoreTableList = new ArrayList<String> ();
 	private List<String> ignoreTableStartsWithPattern = new ArrayList<String> ();
 	private List<String> ignoreTableEndsWithPattern = new ArrayList<String> ();
+	private List<String> assignTableStartsWithPattern = new ArrayList<String> ();
+	private List<String> assignTableEndsWithPattern = new ArrayList<String> ();
+	private List<String> assignTableList = new ArrayList<String> ();
 	private List<String> ignoreFKeys = new ArrayList<String> ();
 
 	private String propertiesFile;
@@ -167,6 +168,31 @@ public class CodeGenerator
 				logger.info ("Ignore table Starts with pattern:{}", this.ignoreTableStartsWithPattern);
 				logger.info ("Ignore table Ends with pattern:{}", this.ignoreTableEndsWithPattern);
 			}
+			//assignTableList
+			String assignTableListStr = this.properties.getProperty ("assign.tablelist");
+			if (StringUtils.isNotBlank (assignTableListStr))
+			{
+				StringTokenizer strTok = new StringTokenizer (assignTableListStr, ",");
+				while (strTok.hasMoreTokens ())
+				{
+					String token = strTok.nextToken ().toLowerCase ().trim ();
+					if (StringUtils.startsWith (token, "*"))
+					{
+						this.assignTableEndsWithPattern.add (token.substring (1, token.length ()));
+					}
+					else if (StringUtils.endsWith (token, "*"))
+					{
+						this.assignTableStartsWithPattern.add (token.substring (0, token.length () - 1));
+					}
+					else
+					{
+						this.assignTableList.add (token);
+					}
+				}
+				logger.info ("Assign table list:{}", this.assignTableList);
+				logger.info ("Assign table Starts with pattern:{}", this.assignTableStartsWithPattern);
+				logger.info ("Assign table Ends with pattern:{}", this.assignTableEndsWithPattern);
+			}
 			// Add ignore fkeys
 			String ignoreFKeys = this.properties.getProperty ("ignore.fkeys");
 			String[] fkeys = StringUtils.split (ignoreFKeys, ",");
@@ -242,6 +268,27 @@ public class CodeGenerator
 		for (String ignoreEndsWithPattern : this.ignoreTableEndsWithPattern)
 		{
 			if (StringUtils.endsWith (tableName, ignoreEndsWithPattern))
+			{
+				return true;
+			}
+		}
+		// first do a actual match
+		if (assignTableList.size()!=0 && !this.assignTableList.contains (tableName.toLowerCase ()))
+		{
+			return true;
+		}
+		// do a startswith check
+		for (String assignStartsWithPattern : this.assignTableStartsWithPattern)
+		{
+			if (!StringUtils.startsWith (tableName, assignStartsWithPattern))
+			{
+				return true;
+			}
+		}
+		// do a startswith check
+		for (String assignEndsWithPattern : this.assignTableEndsWithPattern)
+		{
+			if (!StringUtils.endsWith (tableName, assignEndsWithPattern))
 			{
 				return true;
 			}
