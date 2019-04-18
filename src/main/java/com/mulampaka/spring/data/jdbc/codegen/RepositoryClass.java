@@ -38,13 +38,15 @@ public class RepositoryClass extends BaseClass
 		super.setExtendsClassName ("com.nurkiewicz.jdbcrepository.JdbcRepository");
 		this.addImports ();
 	}
-	
+
 	@Override
 	protected void addImports ()
 	{		
 		this.imports.add("org.springframework.beans.factory.annotation.Autowired");
 		this.imports.add("org.springframework.jdbc.core.JdbcOperations");
-		this.imports.add("org.springframework.stereotype.Repository");	
+		this.imports.add("org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate");
+		this.imports.add("org.springframework.stereotype.Repository");
+		this.imports.add("javax.annotation.Resource");
 	}
 
 	protected void printClassAnnotations ()
@@ -219,8 +221,9 @@ public class RepositoryClass extends BaseClass
 	protected void printFields () 
 	{
 		this.sourceBuf.append("\t@Autowired\n\tprivate JdbcOperations jdbcOperations;\n\n");
+		this.sourceBuf.append("\t@Resource\n\tprivate NamedParameterJdbcTemplate namedTemplate;\n\n");
 	}
-	
+
 	protected void printMethods () 
 	{
 		this.sourceBuf.append("\tprotected JdbcOperations getJdbcOperations()\n");
