@@ -75,7 +75,7 @@ public class DomainClass extends BaseClass
 	@Override
 	protected void  addImports ()
 	{
-		this.imports.add ("org.apache.commons.lang.builder.ToStringBuilder");
+		this.imports.add ("org.apache.commons.lang3.builder.ToStringBuilder");
 	}
 
 	public boolean isGenerateJsr303Annotations ()
