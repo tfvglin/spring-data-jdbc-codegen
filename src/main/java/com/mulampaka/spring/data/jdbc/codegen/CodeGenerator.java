@@ -561,6 +561,9 @@ public class CodeGenerator
 				if (!domainClass.getImports ().contains ("java.util.Date"))
 				{
 					domainClass.getImports ().add ("java.util.Date");
+					domainClass.getImports().add("org.springframework.format.annotation.DateTimeFormat");
+					domainClass.getImports().add("com.fasterxml.jackson.databind.annotation.JsonSerialize");
+					domainClass.getImports().add("com.lhcis.common.utils.JsonDateTimeSerializer");
 				}
 				if (!dbClass.getImports ().contains ("java.sql.Timestamp"))
 				{

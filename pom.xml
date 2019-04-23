@@ -5,7 +5,7 @@
 	<groupId>com.mulampaka.spring.data.jdbc</groupId>
 	<artifactId>spring-data-jdbc-codegen</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.4-lsn.1</version>
+	<version>1.0.4-lsn.2</version>
 	<name>Spring Data Jdbc Code Generator</name>
 	<url>https://github.com/kalyanmulampaka</url>
 	<properties>

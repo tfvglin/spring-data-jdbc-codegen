@@ -1,25 +1,27 @@
 /**
- * 
+ *
  * Copyright 2013
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * @author Kalyan Mulampaka
  */
 package com.mulampaka.spring.data.jdbc.codegen;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.google.common.base.Objects;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.slf4j.Logger;
@@ -30,13 +32,13 @@ import com.mulampaka.spring.data.jdbc.codegen.util.CodeGenUtil;
  * Class to represent the generated Java bean Class. Class name is same as the
  * table name in singular form. e.g For employees table , Employee.java is
  * generated
- * 
+ *
  * @author Kalyan Mulampaka
- * 
+ *
  */
 public class DomainClass extends BaseClass
 {
-	
+
 	final static Logger logger = LoggerFactory.getLogger (DomainClass.class);
 	private static String PK_CLASS = "static com.nurkiewicz.jdbcrepository.JdbcRepository.pk";
 
@@ -49,38 +51,38 @@ public class DomainClass extends BaseClass
 		super.setInterfaceName ("org.springframework.data.domain.Persistable");
 		this.addImports ();
 	}
-	
+
 	public List<String> getJsr303InsertGroups ()
 	{
 		return this.jsr303InsertGroups;
 	}
-	
+
 	public void setJsr303InsertGroups (List<String> jsr303InsertGroups)
 	{
 		this.jsr303InsertGroups = jsr303InsertGroups;
 	}
-	
+
 	public List<String> getJsr303UpdateGroups ()
 	{
 		return this.jsr303UpdateGroups;
 	}
-	
+
 	public void setJsr303UpdateGroups (List<String> jsr303UpdateGroups)
 	{
 		this.jsr303UpdateGroups = jsr303UpdateGroups;
 	}
 
 	@Override
-	protected void addImports ()
+	protected void  addImports ()
 	{
 		this.imports.add ("org.apache.commons.lang.builder.ToStringBuilder");
 	}
-	
+
 	public boolean isGenerateJsr303Annotations ()
 	{
 		return this.generateJsr303Annotations;
 	}
-	
+
 	public void setGenerateJsr303Annotations (boolean generateJsr303Annotations)
 	{
 		this.generateJsr303Annotations = generateJsr303Annotations;
@@ -114,7 +116,7 @@ public class DomainClass extends BaseClass
 		}
 		sourceBuf.append ("\n");
 	}
-	
+
 	protected void printFields ()
 	{
 		sourceBuf.append ("\tprivate static final long serialVersionUID = 1L;\n\n");
@@ -159,7 +161,7 @@ public class DomainClass extends BaseClass
 								sourceBuf.append (", ");
 						}
 						sourceBuf.append (" })\n");
-						
+
 						// insert groups
 						sourceBuf.append ("\t@Null (groups = { ");
 						i = this.jsr303InsertGroups.size ();
@@ -213,6 +215,10 @@ public class DomainClass extends BaseClass
 				}
 
 			}
+			if(Objects.equal(field.getType (), ParameterType.DATE)){
+			    sourceBuf.append("\t@DateTimeFormat(pattern = \"yyyy-MM-dd HH:mm:ss\")\n");
+			    sourceBuf.append("\t@JsonSerialize(using = JsonDateTimeSerializer.class)\n");
+            }
 			sourceBuf.append ("\tprivate " + modifiers.toString () + type + " " + fieldName);
 			if (StringUtils.isNotBlank (field.getDefaultValue ()))
 			{
@@ -296,7 +302,7 @@ public class DomainClass extends BaseClass
 			}
 		}
 	}
-	
+
 	protected void printFKeyClassFields ()
 	{
 		// add composite classes from foreign pkeys
@@ -309,9 +315,9 @@ public class DomainClass extends BaseClass
 				String refObj = WordUtils.capitalize (CodeGenUtil.normalize (fkey.getRefTableName ()));
 				String fkFieldName = CodeGenUtil.normalize (fkey.getFieldName ());
 				logger.debug ("Processing fkey fieldname:{}", fkey.getFieldName ());
-				if (this.containsFieldName (fkey.getFieldName ())) 
+				if (this.containsFieldName (fkey.getFieldName ()))
 				{
-				    // field name is already used so add 
+				    // field name is already used so add
 				    fkFieldName = fkFieldName + ++fieldNameCounter;
 				    logger.debug ("FK field name changed to {}", fkFieldName);
 				    fkey.setFieldName (fkFieldName);
@@ -326,7 +332,7 @@ public class DomainClass extends BaseClass
 		}
 		sourceBuf.append ("\n");
 	}
-	
+
 	protected void printRelations ()
 	{
 		if (!this.relations.isEmpty ())
@@ -343,7 +349,7 @@ public class DomainClass extends BaseClass
 						String child = CodeGenUtil.normalize (relation.getChild ());
 						sourceBuf.append ("\tprivate " + WordUtils.capitalize (child));
 						sourceBuf.append (" " + child + ";\n");
-						
+
 						Method method = new Method ();
 						methods.add (method);
 						method.setName (child);
@@ -358,7 +364,7 @@ public class DomainClass extends BaseClass
                         logger.debug ("Field name:{}", fieldName);
 						sourceBuf.append ("\tprivate List<" + WordUtils.capitalize (child));
 						sourceBuf.append ("> " + fieldName + " = new ArrayList<" + WordUtils.capitalize (child) + "> ();\n");
-						
+
 						method = new Method ();
 						methods.add (method);
 						method.setName (child);
@@ -372,7 +378,7 @@ public class DomainClass extends BaseClass
 				}
 				sourceBuf.append ("\n");
 			}
-			
+
 		}
 
 	}
@@ -380,7 +386,7 @@ public class DomainClass extends BaseClass
 	protected void printInterfaceImpl ()
 	{
 		// add the interface impl methods
-		
+
 		if (this.pkeys.size () > 1)
 		{
 			sourceBuf.append ("\tpublic Object[] getId()\n");
@@ -411,7 +417,7 @@ public class DomainClass extends BaseClass
 			super.printOpenBrace (1, 1);
 			sourceBuf.append ("\t\treturn this." + CodeGenUtil.normalize (key) + ";\n");
 			super.printCloseBrace (1, 2);
-			
+
 			sourceBuf.append ("\tpublic boolean isNew ()\n");
 			sourceBuf.append ("\t{\n");
 			sourceBuf.append ("\t\treturn this." + CodeGenUtil.normalize (key) + " == null;\n");
@@ -433,7 +439,7 @@ public class DomainClass extends BaseClass
 			super.printCloseBrace (1, 2);
 		}
 	}
-	
+
 	protected void printMethods ()
 	{
 		for (Method method : methods)
@@ -457,7 +463,7 @@ public class DomainClass extends BaseClass
 
 			if (fieldName.equalsIgnoreCase ("id") && this.pkeys.containsKey (fieldName))
 			{
-				// id 
+				// id
 				logger.debug ("Found id as pk, it is handled in the pk section, so not adding setter and getter");
 				continue;
 			}
@@ -473,7 +479,7 @@ public class DomainClass extends BaseClass
 					sourceBuf.append ("\tpublic void set" + mName + " (");
 					sourceBuf.append ("List<" + methodName + "> " + paramName);
 					sourceBuf.append (")\n");
-					
+
 					// implementation
 					super.printOpenBrace (1, 1);
 					sourceBuf.append ("\t\tthis." + paramName + " = " + paramName + ";\n");
@@ -484,7 +490,7 @@ public class DomainClass extends BaseClass
 					sourceBuf.append ("\tpublic void set" + methodName + " (");
 					sourceBuf.append (paramType + " " + paramName);
 					sourceBuf.append (")\n");
-					
+
 					// implementation
 					super.printOpenBrace (1, 1);
 					sourceBuf.append ("\t\tthis." + paramName + " = " + paramName + ";\n");
@@ -513,7 +519,7 @@ public class DomainClass extends BaseClass
 			}
 		}
 	}
-	
+
 	protected void preprocess ()
 	{
 		if (this.pkeys.size () > 0)
@@ -535,7 +541,7 @@ public class DomainClass extends BaseClass
 			method.setParameter (new Parameter (persistedField.getName (), ParameterType.BOOLEAN));
 			methods.add (method);
 		}
-		
+
 	}
 
 	public void generateSource ()
@@ -549,17 +555,17 @@ public class DomainClass extends BaseClass
 		this.printClassImplements ();
 
 		super.printOpenBrace (0, 2);
-		
+
 		this.printFields ();
-		
+
 		this.printFKeyClassFields ();
-		
+
 		this.printRelations ();
 
 		super.printCtor ();
-		
+
 		this.printInterfaceImpl ();
-		
+
 		this.printMethods ();
 
 		super.printToString ();
