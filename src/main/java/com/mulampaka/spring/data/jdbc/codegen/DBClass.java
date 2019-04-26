@@ -1,38 +1,39 @@
 /**
- * 
+ *
  * Copyright 2013
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * @author Kalyan Mulampaka
  */
 package com.mulampaka.spring.data.jdbc.codegen;
 
-import java.util.List;
+import com.mulampaka.spring.data.jdbc.codegen.util.CodeGenUtil;
 import org.apache.commons.lang.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.mulampaka.spring.data.jdbc.codegen.util.CodeGenUtil;
+
+import java.util.List;
 
 /**
  * Class to represent the db metadata, row mappers and unmappers
- * 
+ *
  * @author Kalyan Mulampaka
- * 
+ *
  */
 public class DBClass extends BaseClass
 {
-	
+
 	final static Logger logger = LoggerFactory.getLogger (DBClass.class);
 	public static String DB_CLASSSUFFIX = "DB";
 
@@ -43,7 +44,7 @@ public class DBClass extends BaseClass
 		this.addImports ();
 		this.classSuffix = DB_CLASSSUFFIX;
 	}
-	
+
 	@Override
 	protected void addImports ()
 	{
@@ -54,19 +55,19 @@ public class DBClass extends BaseClass
 		this.imports.add ("java.util.Map");
 		this.imports.add ("com.nurkiewicz.jdbcrepository.RowUnmapper");
 	}
-	
+
 	protected void printDBTableInfo ()
 	{
 		// add the table name
 		sourceBuf.append ("\tprivate static String TABLE_NAME = \"" + this.name.toUpperCase () + "\";\n\n");
-		
+
 		// add the table name
 		sourceBuf.append ("\tprivate static String TABLE_ALIAS = \"" + CodeGenUtil.createTableAlias (this.name.toLowerCase ()) + "\";\n\n");
-		
+
 		sourceBuf.append ("\tpublic static String getTableName()\n\t{\n\t\treturn TABLE_NAME;\n\t}\n\n");
-		
+
 		sourceBuf.append ("\tpublic static String getTableAlias()\n\t{\n\t\treturn TABLE_NAME + \" as \" + TABLE_ALIAS;\n\t}\n\n");
-        
+
         sourceBuf.append ("\tpublic static String getAlias()\n\t{\n\t\treturn TABLE_ALIAS;\n\t}\n\n");
 	}
 
@@ -80,10 +81,10 @@ public class DBClass extends BaseClass
 		String name = WordUtils.capitalize (CodeGenUtil.normalize (this.name));
 		// create mapper
 		sourceBuf.append ("\tpublic static final RowMapper<" + name + "> ROW_MAPPER = new " + name + "RowMapper ();\n");
-		
+
 		sourceBuf.append ("\tpublic static final class  " + name + "RowMapper implements RowMapper<" + name + ">\n");
 		this.printOpenBrace (1, 1);
-		
+
 		sourceBuf.append ("\t\tpublic " + name + " mapRow(ResultSet rs, int rowNum) throws SQLException \n");
 		this.printOpenBrace (2, 1);
 		sourceBuf.append ("\t\t\t" + name + " obj = new " + name + "();\n");
@@ -101,6 +102,11 @@ public class DBClass extends BaseClass
 					typeName = "Timestamp";
 				}
 				sourceBuf.append ("\t\t\tobj.set" + WordUtils.capitalize (CodeGenUtil.normalize (field.getName ())) + "(rs.get" + typeName + "(COLUMNS." + field.getName ().toUpperCase () + ".getColumnName()));\n");
+				if(field.getType () == ParameterType.LONG || field.getType () == ParameterType.INTEGER){
+					sourceBuf.append("\t\t\tif(rs.wasNull()) {");
+					sourceBuf.append ("\t\t\t\tobj.set" + WordUtils.capitalize (CodeGenUtil.normalize (field.getName ())) + "(null);\n");
+					sourceBuf.append("\t\t\t}");
+				}
 			}
 		}
 
@@ -112,7 +118,7 @@ public class DBClass extends BaseClass
 		this.printCloseBrace (2, 1);// end of method
 		this.printCloseBrace (1, 2); // end of inner mapper class
 	}
-	
+
 	protected void printRowUnMapper ()
 	{
 		String name = WordUtils.capitalize (CodeGenUtil.normalize (this.name));
@@ -143,21 +149,21 @@ public class DBClass extends BaseClass
 		this.printCloseBrace (2, 1);
 		this.printCloseBrace (1, 2);// end of inner unmapper class
 	}
-	
+
 	protected void printAliasRowMapper ()
 	{
 		String name = WordUtils.capitalize (CodeGenUtil.normalize (this.name));
 		// create alias mapper
 		sourceBuf.append ("\tpublic static final RowMapper<" + name + "> ALIAS_ROW_MAPPER = new " + name + "AliasRowMapper ();\n");
-		
+
 		sourceBuf.append ("\tpublic static final class  " + name + "AliasRowMapper implements RowMapper<" + name + ">\n");
 		this.printOpenBrace (1, 1);
 		List<Relation> relations = this.relations.get (this.name);
-		
+
 		if (relations != null && !relations.isEmpty ())
 		{
 			boolean loadAllRelations = false;
-			
+
 			for (Relation relation : relations)
 			{
 				switch (relation.getType ())
@@ -245,7 +251,7 @@ public class DBClass extends BaseClass
 		this.printCloseBrace (2, 1); // end of method
 		this.printCloseBrace (1, 2); // end of inner alias mapper class
 	}
-	
+
 	protected void printRelations ()
 	{
 		List<Relation> relations = this.relations.get (this.name);
@@ -290,7 +296,7 @@ public class DBClass extends BaseClass
 	{
 		sourceBuf.append ("\tpublic enum COLUMNS\n");
 		this.printOpenBrace (1, 1);
-		
+
 		for (Field field : this.fields)
 		{
 			if (field.isPersistable ())
@@ -311,22 +317,22 @@ public class DBClass extends BaseClass
 		this.printOpenBrace (2, 1);
 		sourceBuf.append ("\t\t\tthis.columnName = columnName;\n");
 		this.printCloseBrace (2, 2);
-		
+
 		sourceBuf.append ("\t\tpublic String getColumnName ()\n");
 		this.printOpenBrace (2, 1);
 		sourceBuf.append ("\t\t\treturn this.columnName;\n");
 		this.printCloseBrace (2, 2);
-		
+
 		sourceBuf.append ("\t\tpublic String getColumnAlias ()\n");
 		this.printOpenBrace (2, 1);
 		sourceBuf.append ("\t\t\treturn TABLE_ALIAS + \".\" + this.columnName;\n");
 		this.printCloseBrace (2, 2);
-		
+
 		sourceBuf.append ("\t\tpublic String getColumnAliasAsName ()\n");
 		this.printOpenBrace (2, 1);
 		sourceBuf.append ("\t\t\treturn TABLE_ALIAS  + \".\" + this.columnName + \" as \" + TABLE_ALIAS + \"_\" + this.columnName;\n");
 		this.printCloseBrace (2, 2);
-		
+
 		sourceBuf.append ("\t\tpublic String getColumnAliasName ()\n");
 		this.printOpenBrace (2, 1);
 		sourceBuf.append ("\t\t\treturn TABLE_ALIAS + \"_\" + this.columnName;\n");
@@ -334,47 +340,47 @@ public class DBClass extends BaseClass
 
 		this.printCloseBrace (1, 2);
 	}
-	
+
 	protected void preprocess ()
 	{
-		
+
 	}
 
 	public void generateSource ()
 	{
 		// generate the default stuff from the super class
 		super.printPackage ();
-		
+
 		super.printImports ();
-		
+
 		super.printClassComments ();
-		
+
 		super.printClassDefn ();
 
 		super.printClassImplements ();
 
 		this.printOpenBrace (0, 2);
-		
+
 		this.printDBTableInfo ();
-		
+
         this.printSelectAllColumns ();
 
 		this.printColumnsEnum ();
-		
+
 		this.printCtor ();
-		
+
 		this.printRowMapper ();
-		
+
 		this.printRowUnMapper ();
-		
+
 		this.printAliasRowMapper ();
-		
+
 		this.printAllAliasesMethod ();
-		
+
 		super.printUserSourceCode ();
 
 		this.printCloseBrace (0, 0); // end of class
-		//logger.debug ("Printing Class file content:\n" + sourceBuf.toString ());		
+		//logger.debug ("Printing Class file content:\n" + sourceBuf.toString ());
 	}
 
 }
