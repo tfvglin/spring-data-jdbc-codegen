@@ -59,7 +59,7 @@ public class DBClass extends BaseClass
 	protected void printDBTableInfo ()
 	{
 		// add the table name
-		sourceBuf.append ("\tprivate static String TABLE_NAME = \"" + this.name.toUpperCase () + "\";\n\n");
+		sourceBuf.append ("\tprivate static String TABLE_NAME = \"" + this.name.toLowerCase () + "\";\n\n");
 
 		// add the table name
 		sourceBuf.append ("\tprivate static String TABLE_ALIAS = \"" + CodeGenUtil.createTableAlias (this.name.toLowerCase ()) + "\";\n\n");
@@ -103,9 +103,9 @@ public class DBClass extends BaseClass
 				}
 				sourceBuf.append ("\t\t\tobj.set" + WordUtils.capitalize (CodeGenUtil.normalize (field.getName ())) + "(rs.get" + typeName + "(COLUMNS." + field.getName ().toUpperCase () + ".getColumnName()));\n");
 				if(field.getType () == ParameterType.LONG || field.getType () == ParameterType.INTEGER){
-					sourceBuf.append("\t\t\tif(rs.wasNull()) {");
+					sourceBuf.append("\t\t\tif(rs.wasNull()) {\n");
 					sourceBuf.append ("\t\t\t\tobj.set" + WordUtils.capitalize (CodeGenUtil.normalize (field.getName ())) + "(null);\n");
-					sourceBuf.append("\t\t\t}");
+					sourceBuf.append("\t\t\t}\n");
 				}
 			}
 		}
@@ -229,6 +229,11 @@ public class DBClass extends BaseClass
 					typeName = "Timestamp";
 				}
                 sourceBuf.append ("\t\t\tobj.set" + WordUtils.capitalize (CodeGenUtil.normalize (field.getName ())) + "(rs.get" + typeName + "(COLUMNS." + field.getName ().toUpperCase () + ".getColumnAliasName()));\n");
+                if(field.getType () == ParameterType.LONG || field.getType () == ParameterType.INTEGER){
+                    sourceBuf.append("\t\t\tif(rs.wasNull()) {\n");
+                    sourceBuf.append ("\t\t\t\tobj.set" + WordUtils.capitalize (CodeGenUtil.normalize (field.getName ())) + "(null);\n");
+                    sourceBuf.append("\t\t\t}\n");
+                }
 			}
 		}
 		if (this.pkeys.size () > 1)
