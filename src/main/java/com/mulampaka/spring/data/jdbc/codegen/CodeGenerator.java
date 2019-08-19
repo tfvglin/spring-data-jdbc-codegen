@@ -542,13 +542,21 @@ public class CodeGenerator
 			}
 			else if ((type == Types.DOUBLE) || (type == Types.NUMERIC))
 			{
-				fieldType = ParameterType.DOUBLE;
-				parameter = new Parameter (colName, ParameterType.DOUBLE);
+				fieldType = ParameterType.BIGDECIMAL;
+				if (!domainClass.getImports ().contains ("java.math.BigDecimal"))
+				{
+					domainClass.getImports ().add ("java.math.BigDecimal");
+				}
+				parameter = new Parameter (colName, ParameterType.BIGDECIMAL);
 			}
 			else if ((type == Types.FLOAT) || (type == Types.DECIMAL))
 			{
-				fieldType = ParameterType.FLOAT;
-				parameter = new Parameter (colName, ParameterType.FLOAT);
+				fieldType = ParameterType.BIGDECIMAL;
+				if (!domainClass.getImports ().contains ("java.math.BigDecimal"))
+				{
+					domainClass.getImports ().add ("java.math.BigDecimal");
+				}
+				parameter = new Parameter (colName, ParameterType.BIGDECIMAL);
 			}
 			else if ((type == Types.INTEGER) || (type == Types.SMALLINT) || (type == Types.TINYINT))
 			{

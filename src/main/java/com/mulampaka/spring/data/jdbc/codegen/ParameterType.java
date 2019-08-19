@@ -35,7 +35,8 @@ public enum ParameterType
 	FLOAT ("Float", "float"),
 	DOUBLE ("Double", "double"),
 	CHAR ("Character", "char"),
-	LIST ("List", "List")
+	LIST ("List", "List"),
+	BIGDECIMAL ("BigDecimal", "BigDecimal"),
 	;
 
 	private String name;
