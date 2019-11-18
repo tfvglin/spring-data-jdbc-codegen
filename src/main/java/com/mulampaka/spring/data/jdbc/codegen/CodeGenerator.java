@@ -555,6 +555,8 @@ public class CodeGenerator
 				if (!domainClass.getImports ().contains ("java.math.BigDecimal"))
 				{
 					domainClass.getImports ().add ("java.math.BigDecimal");
+					domainClass.getImports ().add ("com.fasterxml.jackson.databind.ser.std.ToStringSerializer");
+					domainClass.getImports ().add ("com.fasterxml.jackson.databind.annotation.JsonSerialize");
 				}
 				parameter = new Parameter (colName, ParameterType.BIGDECIMAL);
 			}
@@ -572,6 +574,7 @@ public class CodeGenerator
 					domainClass.getImports().add("org.springframework.format.annotation.DateTimeFormat");
 					domainClass.getImports().add("com.fasterxml.jackson.databind.annotation.JsonSerialize");
 					domainClass.getImports().add("com.lhcis.common.utils.JsonDateTimeSerializer");
+					domainClass.getImports().add("com.fasterxml.jackson.annotation.JsonIgnore");
 				}
 				if (!dbClass.getImports ().contains ("java.sql.Timestamp"))
 				{

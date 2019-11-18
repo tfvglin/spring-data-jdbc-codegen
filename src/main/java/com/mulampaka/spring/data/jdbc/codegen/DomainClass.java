@@ -219,7 +219,11 @@ public class DomainClass extends BaseClass
 			if(Objects.equal(field.getType (), ParameterType.DATE)){
 			    sourceBuf.append("\t@DateTimeFormat(pattern = \"yyyy-MM-dd HH:mm:ss\")\n");
 			    sourceBuf.append("\t@JsonSerialize(using = JsonDateTimeSerializer.class)\n");
-            }
+            }else if(Objects.equal(fieldName,"persisted")){
+				sourceBuf.append("\t@JsonIgnore\n");
+			}else if(Objects.equal(field.getType(),ParameterType.BIGDECIMAL)){
+				sourceBuf.append("\t@JsonSerialize(using = ToStringSerializer.class)\n");
+			}
 			sourceBuf.append ("\tprivate " + modifiers.toString () + type + " " + fieldName);
 			if (StringUtils.isNotBlank (field.getDefaultValue ()))
 			{
@@ -535,7 +539,7 @@ public class DomainClass extends BaseClass
 			persistedField.setPrimitive (true);
 			persistedField.setPersistable (false);// this is not saved in db
 			persistedField.setType (ParameterType.BOOLEAN);
-			persistedField.getModifiers ().add ("transient");
+//			persistedField.getModifiers ().add ("transient");
 			fields.add (persistedField);
 			Method method = new Method ();
 			method.setName (persistedField.getName ());
